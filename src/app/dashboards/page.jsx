@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Overview from "@/components/dashboard/Overview";
 import APIPlayground from "@/components/dashboard/APIPlayground";
 import UseCases from "@/components/dashboard/UseCases";
@@ -12,6 +15,18 @@ import TavilyMCP from "@/components/dashboard/TavilyMCP";
 
 export default function DashboardPage() {
   const [activeView, setActiveView] = useState("overview");
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -36,7 +51,11 @@ export default function DashboardPage() {
     }
   };
 
+  const userEmail = user?.email || "";
+  const userInitial = userEmail.charAt(0).toUpperCase() || "U";
+
   return (
+    <ProtectedRoute>
     <div className="flex h-screen bg-white dark:bg-zinc-900">
       {/* Sidebar */}
       <aside className="w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex flex-col">
@@ -171,16 +190,36 @@ export default function DashboardPage() {
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg p-2">
-            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium text-sm">A</div>
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 relative">
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg p-2"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium text-sm">
+              {userInitial}
+            </div>
             <div className="flex-1">
-              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Aman Jain</div>
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{userEmail}</div>
             </div>
             <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
+          
+          {/* User Menu Dropdown */}
+          {showUserMenu && (
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 py-1">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -214,5 +253,6 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

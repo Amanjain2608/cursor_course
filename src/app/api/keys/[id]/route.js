@@ -11,11 +11,12 @@ const normalize = (row) => ({
 
 export async function GET(request, { params }) {
   try {
+    const { id } = await params;
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("api_key")
       .select("id, name, key, type, usage, created_at")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (error) {
@@ -30,6 +31,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
@@ -39,7 +41,7 @@ export async function PUT(request, { params }) {
         key: body.key,
         type: body.type || "dev",
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .select("id, name, key, type, usage, created_at")
       .single();
 
@@ -55,8 +57,9 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const { id } = await params;
     const supabase = getSupabaseClient();
-    const { error } = await supabase.from("api_key").delete().eq("id", params.id);
+    const { error } = await supabase.from("api_key").delete().eq("id", id);
 
     if (error) {
       return Response.json({ error: "API key not found" }, { status: 404 });
