@@ -7,7 +7,15 @@ if (process.env.NODE_ENV !== 'production') {
 
 const nextConfig = {
   /* config options here */
-  allowedDevOrigins: ['http://10.198.82.115:3000', 'http://10.198.82.216:8080'],
+  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : '',
+  allowedDevOrigins: [
+    '10.198.82.115',
+    '10.198.82.115:3000',
+    '10.198.82.115:8080',
+    '10.198.82.216',
+    '10.198.82.216:3000',
+    '10.198.82.216:8080',
+  ],
 };
 
 module.exports = nextConfig;
